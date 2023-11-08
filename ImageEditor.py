@@ -59,8 +59,8 @@ class Application:
             img = Image.open(filepath)
             img_width, img_height = img.size
 
-            scalarx = 500/img_width
-            scalary = 400/img_height
+            scalarx = 500 / img_width
+            scalary = 400 / img_height
             if scalarx > scalary:
                 img_width *= scalary
                 img_height *= scalary
@@ -73,7 +73,13 @@ class Application:
         except:
             self.info_label.config(text="Invalid image type or contents")
 
-        self.in_image_lbl.config(image=self.input_img, background="light grey", text="", width=img_width, height=img_height)
+        self.in_image_lbl.config(
+            image=self.input_img,
+            background="light grey",
+            text="",
+            width=img_width,
+            height=img_height,
+        )
 
 
 if __name__ == "__main__":
