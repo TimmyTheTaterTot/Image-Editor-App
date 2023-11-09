@@ -22,13 +22,13 @@ def validate_commands(args):
     
 # displays the image that is input
 def display(args):
-    img = Image(args[1])
+    img = Image(args[0])
     img.save("cached_images/image_cache.jpg")
 
 # darkens image by a certain percent and saves to output file location
 def darken(args):
-    img = Image(args[1])
-    percent = float(args[2])
+    img = Image(args[0])
+    percent = float(args[1])
     brightness = 1 - percent
 
     for pixel in img:
@@ -40,7 +40,7 @@ def darken(args):
 
 # applies sepia filter to input image and saves to output file location
 def sepia(args):
-    img = Image(args[1])
+    img = Image(args[0])
 
     for pixel in img:
         true_red = 0.393*pixel.red + 0.769*pixel.green + 0.189*pixel.blue
@@ -62,7 +62,7 @@ def sepia(args):
 
 # averages the colors of each pixel to create grayscale image, then returns it
 def grayscale(args):
-    img = Image(args[1])
+    img = Image(args[0])
 
     for pixel in img:
         average = (pixel.red + pixel.green + pixel.blue) / 3
@@ -74,10 +74,10 @@ def grayscale(args):
 
 # creates a new image with borders around the edges of a specified thickness and color and outputs to selected file
 def make_borders(args):
-    img = Image(args[1])
+    img = Image(args[0])
     w = img.width
     h = img.height
-    thickness = int(args[3])
+    thickness = int(args[1])
     new_img = Image.blank(w + 2*thickness, h + 2*thickness)
 
     for x in range(new_img.width):
@@ -85,9 +85,9 @@ def make_borders(args):
             pixel = new_img.get_pixel(x, y)
 
             if x < thickness or y < thickness or x >= w + thickness or y >= h + thickness:
-                pixel.red = args[4]
-                pixel.green = args[5]
-                pixel.blue = args[6]
+                pixel.red = args[2]
+                pixel.green = args[3]
+                pixel.blue = args[4]
             else:
                 o_pixel = img.get_pixel(x - thickness, y - thickness)
                 set_pixel(pixel, o_pixel)
@@ -96,7 +96,7 @@ def make_borders(args):
 
 # flips input image top to bottom and saves to output file
 def flip(args):
-    img = Image(args[1])
+    img = Image(args[0])
     w = img.width
     h = img.height
     new_img = Image.blank(w, h)
@@ -111,7 +111,7 @@ def flip(args):
 
 # mirrors input image left to right and saves to output file
 def mirror(args):
-    img = Image(args[1])
+    img = Image(args[0])
     w = img.width
     h = img.height
     new_img = Image.blank(w, h)
