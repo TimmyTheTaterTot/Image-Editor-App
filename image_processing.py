@@ -28,7 +28,7 @@ def display(args):
 # darkens image by a certain percent and saves to output file location
 def darken(args):
     img = Image(args[1])
-    percent = float(args[3])
+    percent = float(args[2])
     brightness = 1 - percent
 
     for pixel in img:

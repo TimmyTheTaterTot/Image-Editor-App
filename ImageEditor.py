@@ -31,7 +31,7 @@ class Application:
         self.window.resizable(False, False)
         self.selected_filter = tk.StringVar()
         self.selected_filter.set("display")
-        self.filter_settings = tk.StringVar()
+        self.filter_settings = tk.DoubleVar()
 
         # create application frames
         self.info_frame = tk.Frame(master=self.window, height=20)
@@ -63,9 +63,28 @@ class Application:
         filter_dropdown.pack(side=tk.RIGHT, padx=4, pady=4)
         self.info_label.pack(side=tk.LEFT, padx=4, pady=4)
 
+        # set the close_window function to be run when the user closes the window
+        self.window.protocol("WM_DELETE_WINDOW", self.close_window)
+
         # begin window main loop
         self.window.mainloop()
         # fmt: on
+
+
+    def close_window(self):
+        # remove the image_cache file
+        try:
+            os.remove(os.path.join(os.getcwd(), "cached_images/image_cache.jpg"))
+        except OSError:
+            pass
+
+        # then delete the cached_images folder
+        try:
+            os.rmdir(os.path.join(os.getcwd(), "cached_images"))
+        except OSError:
+            print('Unable to delete cache folder: Unexpected items in folder')
+        self.window.destroy()
+
 
     def handle_load_image(self):
         # uses the file dialogue to get input for and process an image file
@@ -89,23 +108,47 @@ class Application:
 
             self.filter_settings_entry.pack(side=tk.RIGHT)
             self.filter_settings_label.pack(side=tk.RIGHT)
-        if option == "make border":
+        elif option == "make border":
             self.filter_settings_label.config(text="border width:")
 
             self.filter_settings_entry.pack(side=tk.RIGHT)
             self.filter_settings_label.pack(side=tk.RIGHT)
+        else:
+            self.filter_settings_entry.pack_forget()
+            self.filter_settings_label.pack_forget()
 
     def handle_apply_filter(self):
         option = self.selected_filter.get()
         img_filepath = "cached_images/image_cache.jpg"
+
+        # check if there is an input file yet or not
+        if not self.filepath:
+            self.info_label.config(text="Cannot Apply. No input file.")
+            return
+        
+        # call the image_processing library function depending on the options chosen by the user
         if option == "display":
             image_processing.display((0, self.filepath))
+        elif option == "darken":
+            try:
+                # code that allows the input box to accept percent values and decimal values
+                darken_percent = float(self.filter_settings.get())
+                if darken_percent >= 1:
+                    darken_percent /= 100
 
+                image_processing.darken((0, self.filepath, darken_percent))
+            except tk.TclError:
+                self.info_label.config(text="Invalid darken percent value")
+
+        # opens the modified image and displays it in the output section
+        # this is necessary because the image_processing library and the
+        # PIL library which has TKinter image support have two slightly
+        # different image formats
         try:
             img = Image.open(img_filepath)
             self.output_img, img_width, img_height = Application.scale_image(img)
         except:
-            self.info_label.config(text="No image Loaded")
+            self.info_label.config(text="Error importing filtered image.")
 
         self.out_img_lbl.config(
             image=self.output_img,
