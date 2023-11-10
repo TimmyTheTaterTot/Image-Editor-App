@@ -1,10 +1,7 @@
-import tkinter as tk, time, os
+import tkinter as tk, os, shutil, image_processing
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter import colorchooser
 from PIL import ImageTk, Image
-import image_processing, byuimage
-
-import shutil
 
 
 class Application:
