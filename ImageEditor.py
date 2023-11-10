@@ -1,8 +1,10 @@
 import tkinter as tk, time, os
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter import colorchooser
 from PIL import ImageTk, Image
 import image_processing, byuimage
+
+import shutil
 
 
 class Application:
@@ -17,7 +19,7 @@ class Application:
             "composite",
             "greenscreen",
         ]
-        self.filepath = None
+        self.filepath = [None]
 
         try:
             os.mkdir(os.path.join(os.getcwd(), "cached_images"))
@@ -35,14 +37,15 @@ class Application:
         self.filter_settings = tk.DoubleVar()
 
         # create application frames
-        self.info_frame = tk.Frame(master=self.window, height=20)
+        self.info_frame = tk.Frame(master=self.window)
         top_spacer_frame = tk.Frame(master=self.window, height=1, background="black")
         self.images_frame = tk.Frame(master=self.window)
+        self.bottom_frame = tk.Frame(master=self.window)
 
         # create widgets that go into above frames
-        self.in_image_lbl = tk.Label(master=self.images_frame, width=40, height=17, background="grey", text="No Image")
+        self.in_image_lbl = tk.Label(master=self.images_frame, width=50, height=17, background="grey", text="No Image")
         middle_spacer_frame = tk.Frame(master=self.images_frame, width=1, background="black")
-        self.out_img_lbl = tk.Label(master=self.images_frame, width=40, height=17, background="grey", text="No Image")
+        self.out_img_lbl = tk.Label(master=self.images_frame, width=50, height=17, background="grey", text="No Image")
         load_img_button = tk.Button(master=self.info_frame, text="Load New Image", command=self.handle_load_image)
         filter_apply_button = tk.Button(master=self.info_frame, text="Apply", command=self.handle_apply_filter)
         filter_dropdown = tk.OptionMenu(self.info_frame, self.selected_filter, "display", *self.filters, command=self.handle_filter_change)
@@ -50,11 +53,13 @@ class Application:
         self.filter_settings_entry = tk.Entry(master=self.info_frame, textvariable=self.filter_settings, width = 5)
         self.filter_settings_label = tk.Label(master=self.info_frame, pady=4)
         self.color_picker_button = tk.Button(master=self.info_frame, text="Choose border color", command=self.color_picker, padx=4, pady=4)
+        self.save_button = tk.Button(master=self.bottom_frame, text="Save Image", command=self.handle_save_image, padx=4, pady=4)
 
         # grid application frames
-        self.info_frame.grid(row=0, sticky="ew")
+        self.info_frame.grid(row=0, sticky="nsew")
         top_spacer_frame.grid(row=1, sticky="nsew")
         self.images_frame.grid(row=2, sticky="nsew")
+        self.bottom_frame.grid(row=3, sticky='ew')
 
         # grid the frame widgets
         self.in_image_lbl.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
@@ -74,16 +79,7 @@ class Application:
 
     def close_window(self):
         # remove the image_cache file
-        try:
-            os.remove(os.path.join(os.getcwd(), "cached_images/image_cache.jpg"))
-        except OSError:
-            pass
-
-        # then delete the cached_images folder
-        try:
-            os.rmdir(os.path.join(os.getcwd(), "cached_images"))
-        except OSError:
-            print("Unable to delete cache folder: Unexpected items in folder")
+        shutil.rmtree("./cached_images")
         self.window.destroy()
 
     def handle_load_image(self):
@@ -98,8 +94,10 @@ class Application:
             self.info_label.config(text="Invalid file path. Please try again.")
             return
 
-        self.filepath = filepath
+        self.filepath[0] = filepath
         self.open_file(filepath)
+        self.save_button.pack_forget()
+        self.bottom_frame.config(height=1)
 
         self.out_img_lbl.config(
             image="",
@@ -108,6 +106,18 @@ class Application:
             background="grey",
             text="No Image",
         )
+
+    def handle_save_image(self):
+        destination_path = asksaveasfilename(
+            defaultextension=".png", filetypes=[(".png", "*.png")], initialfile="output"
+        )
+        if not destination_path:
+            self.info_label.config(text="Invalid file path. Please try again.")
+            return
+
+        # copies the image from cache to the save location
+        src = "./cached_images/image_cache.png"
+        shutil.copy(src, destination_path)
 
     def handle_filter_change(self, option):
         if option == "darken":
@@ -126,18 +136,21 @@ class Application:
             self.filter_settings_label.pack_forget()
             self.color_picker_button.pack_forget()
 
+        self.save_button.pack_forget()
+        self.bottom_frame.config(height=1)
+
     def handle_apply_filter(self):
         option = self.selected_filter.get()
-        img_filepath = "cached_images/image_cache.jpg"
+        img_filepath = "cached_images/image_cache.png"
 
         # check if there is an input file yet or not
-        if not self.filepath:
+        if not self.filepath[0]:
             self.info_label.config(text="Cannot Apply. No input file.")
             return
 
         # call the image_processing library function depending on the options chosen by the user
         if option == "display":
-            image_processing.display([self.filepath])
+            image_processing.display([self.filepath[0]])
         elif option == "darken":
             try:
                 # code that allows the input box to accept percent values and decimal values
@@ -145,26 +158,28 @@ class Application:
                 if darken_percent >= 1:
                     darken_percent /= 100
 
-                image_processing.darken([self.filepath, darken_percent])
+                image_processing.darken([self.filepath[0], darken_percent])
             except tk.TclError:
                 self.info_label.config(text="Invalid darken percent value")
                 return
         elif option == "sepia":
-            image_processing.sepia([self.filepath])
-        elif option == "darken":
-            image_processing.darken([self.filepath])
+            image_processing.sepia([self.filepath[0]])
+        elif option == "grayscale":
+            image_processing.grayscale([self.filepath[0]])
         elif option == "make border":
             try:
                 border_thickness = float(self.filter_settings.get())
-                image_processing.make_borders([self.filepath, border_thickness] + self.color_code)
+
+                image_processing.make_borders(
+                    [self.filepath[0], border_thickness] + self.color_code
+                )
             except tk.TclError:
                 self.info_label.config("Invalid border thickness")
                 return
         elif option == "flip":
-            image_processing.flip([self.filepath])
+            image_processing.flip([self.filepath[0]])
         elif option == "mirror":
-            image_processing.mirror([self.filepath])
-
+            image_processing.mirror([self.filepath[0]])
 
         # opens the modified image and displays it in the output section
         # this is necessary because the image_processing library and the
@@ -187,6 +202,7 @@ class Application:
 
         # clean info_label output if no errors
         self.info_label.config(text="")
+        self.save_button.pack(side=tk.RIGHT, padx=4, pady=4)
 
     def open_file(self, filepath):
         try:
@@ -205,7 +221,12 @@ class Application:
         )
 
     def color_picker(self):
-        self.color_code = list(colorchooser.askcolor(initialcolor='white')[0])
+        try:
+            self.color_code = list(colorchooser.askcolor(initialcolor="grey")[0])
+        except TypeError:
+            self.info_label.config(text="No color received. Operation cancelled.")
+            return
+        self.info_label.config(text="")
 
     @staticmethod
     def scale_image(img, max_x=500, max_y=400):

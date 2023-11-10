@@ -23,7 +23,7 @@ def validate_commands(args):
 # displays the image that is input
 def display(args):
     img = Image(args[0])
-    img.save("cached_images/image_cache.jpg")
+    img.save("cached_images/image_cache.png")
 
 # darkens image by a certain percent and saves to output file location
 def darken(args):
@@ -36,7 +36,7 @@ def darken(args):
         pixel.green = pixel.green * brightness
         pixel.blue = pixel.blue * brightness
 
-    img.save("cached_images/image_cache.jpg")
+    img.save("cached_images/image_cache.png")
 
 # applies sepia filter to input image and saves to output file location
 def sepia(args):
@@ -58,7 +58,7 @@ def sepia(args):
         if pixel.blue > 255:
             pixel.blue = 255
 
-    img.save("cached_images/image_cache.jpg")
+    img.save("cached_images/image_cache.png")
 
 # averages the colors of each pixel to create grayscale image, then returns it
 def grayscale(args):
@@ -70,7 +70,7 @@ def grayscale(args):
         pixel.green = average
         pixel.blue = average
     
-    img.save("cached_images/image_cache.jpg")
+    img.save("cached_images/image_cache.png")
 
 # creates a new image with borders around the edges of a specified thickness and color and outputs to selected file
 def make_borders(args):
@@ -92,7 +92,7 @@ def make_borders(args):
                 o_pixel = img.get_pixel(x - thickness, y - thickness)
                 set_pixel(pixel, o_pixel)
 
-    new_img.save("cached_images/image_cache.jpg")
+    new_img.save("cached_images/image_cache.png")
 
 # flips input image top to bottom and saves to output file
 def flip(args):
@@ -107,7 +107,7 @@ def flip(args):
             n_pixel = new_img.get_pixel(x, y)
             set_pixel(n_pixel, pixel)
 
-    new_img.save("cached_images/image_cache.jpg")
+    new_img.save("cached_images/image_cache.png")
 
 # mirrors input image left to right and saves to output file
 def mirror(args):
@@ -122,7 +122,7 @@ def mirror(args):
             n_pixel = new_img.get_pixel(x, y)
             set_pixel(n_pixel, pixel)
 
-    new_img.save("cached_images/image_cache.jpg")
+    new_img.save("cached_images/image_cache.png")
 
 # composites 4 images of the same size into one image with a specified border thickenss and saves to output file. Border color is black
 def composite(args):
@@ -154,7 +154,7 @@ def composite(args):
                 n_pixel.green = 0
                 n_pixel.blue = 0
 
-    new_img.save("cached_images/image_cache.jpg")
+    new_img.save("cached_images/image_cache.png")
 
 # given threshold and factor, composes two images onto each other, removing green from the foreground image
 def greenscreen(args):
@@ -171,7 +171,7 @@ def greenscreen(args):
             if detect_green(pixel, threshold, factor) == False:
                 set_pixel(b_img.get_pixel(x, y), pixel)
 
-    b_img.save("cached_images/image_cache.jpg")
+    b_img.save("cached_images/image_cache.png")
 
 
 def help(args):
