@@ -307,7 +307,7 @@ class Application:
         self.info_label.config(text="")
 
     @staticmethod
-    def scale_image(img, max_x=500, max_y=400):
+    def scale_image(img:Image, max_x:int=500, max_y:int=400) -> tuple:
         img_width = img.width
         img_height = img.height
 
