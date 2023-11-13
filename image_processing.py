@@ -126,13 +126,16 @@ def mirror(args):
 
 # composites 4 images of the same size into one image with a specified border thickenss and saves to output file. Border color is black
 def composite(args):
-    img1 = Image(args[1])
-    img2 = Image(args[2])
-    img3 = Image(args[3])
-    img4 = Image(args[4])
+    img1 = Image(args[0])
+    img2 = Image(args[1])
+    img3 = Image(args[2])
+    img4 = Image(args[3])
     w = img1.width
     h = img1.height
-    thickness = int(args[6])
+    thickness = int(args[4])
+    red = args[5]
+    green = args[6]
+    blue = args[7]
     new_w = 2*w + 3*thickness
     new_h = 2*h + 3*thickness
     new_img = Image.blank(new_w, new_h)
@@ -150,20 +153,20 @@ def composite(args):
             elif x >= w + 2*thickness and x < 2*w + 2*thickness and y >= h + 2*thickness and y < 2*h + 2*thickness:
                 set_pixel(n_pixel, img4.get_pixel(x - w - 2*thickness, y - h - 2*thickness))
             else:
-                n_pixel.red = 0
-                n_pixel.green = 0
-                n_pixel.blue = 0
+                n_pixel.red = red
+                n_pixel.green = green
+                n_pixel.blue = blue
 
     new_img.save("cached_images/image_cache.png")
 
 # given threshold and factor, composes two images onto each other, removing green from the foreground image
 def greenscreen(args):
-    f_img = Image(args[1])
-    b_img = Image(args[2])
+    f_img = Image(args[0])
+    b_img = Image(args[1])
     w = b_img.width
     h = b_img.height
-    threshold = int(args[4])
-    factor = float(args[5])
+    threshold = int(args[2])
+    factor = float(args[3])
 
     for x in range(w):
         for y in range(h):
